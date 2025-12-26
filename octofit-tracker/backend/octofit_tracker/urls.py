@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from . import views
+import os
+
 
 router = DefaultRouter()
 router.register(r'users', views.UserViewSet, basename='user')
@@ -25,8 +27,24 @@ router.register(r'activities', views.ActivityViewSet, basename='activity')
 router.register(r'workouts', views.WorkoutViewSet, basename='workout')
 router.register(r'leaderboards', views.LeaderboardViewSet, basename='leaderboard')
 
+CODESPACE_NAME = os.environ.get('CODESPACE_NAME', '')
+BASE_URL = f'https://{CODESPACE_NAME}-8000.app.github.dev' if CODESPACE_NAME else 'http://localhost:8000'
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(['GET'])
+def api_root(request, format=None):
+    return Response({
+        'users': f'{BASE_URL}/api/users/',
+        'teams': f'{BASE_URL}/api/teams/',
+        'activities': f'{BASE_URL}/api/activities/',
+        'workouts': f'{BASE_URL}/api/workouts/',
+        'leaderboards': f'{BASE_URL}/api/leaderboards/',
+    })
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.api_root, name='api-root'),
+    path('', api_root, name='api-root'),
     path('api/', include(router.urls)),
 ]
